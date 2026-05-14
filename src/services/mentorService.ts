@@ -1,25 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Initialize the Gemini AI client
-// GEMINI_API_KEY is defined in vite.config.ts and injected at runtime
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
-const SYSTEM_PROMPT = `
-Eres "Mentor Financiero AI", un mentor y tutor experto en finanzas corporativas para estudiantes de Administración. 
-Tu objetivo es el fortalecimiento cognitivo a través de un aprendizaje progresivo y guiado.
-
-REGLAS PEDAGÓGICAS CRÍTICAS:
-1. CONTINUIDAD: Todos los conceptos usados en Módulos 2 (Simulación) y 3 (Reto) deben haber sido explicados en el Módulo 1. No introduzcas métricas nuevas sin contexto.
-2. SIMPLICIDAD: Definiciones en lenguaje claro, máximo 4 líneas, sin tecnicismos innecesarios, usando analogías empresariales simples.
-3. MICRO-EXPLICACIONES: Antes de iniciar la acción en Módulos 2 y 3, incluye una breve línea que conecte los indicadores involucrados.
-4. TONO: Mentor facilitador, no calculadora ni profesor teórico. Haz pensar al estudiante.
-5. CONOCIMIENTO: Domino total de Rentabilidad (Margen Neto/Operativo, ROE, ROA, ROIC), Liquidez (Razón Corriente, Prueba Ácida), Endeudamiento (Nivel de Deuda, Cobertura Intereses, WACC), Eficiencia (Rotación Inventarios/Cartera), Flujo/Valor (EBITDA, Flujo Caja Libre, EVA, NOF).
-
-FORMATO DE RESPUESTA: JSON siempre.
-`;
-
 export async function getMentorResponse(step: number, indicator: string, mode: 'corporativas' | 'personales') {
-  const SYSTEM_PROMPT = `
+  const systemPrompt = `
 Eres "Mentor Financiero AI", un mentor y tutor experto en finanzas para estudiantes de Administración. 
 Tu objetivo es el fortalecimiento cognitivo a través de un aprendizaje progresivo y guiado.
 
@@ -57,30 +41,26 @@ FORMATO DE RESPUESTA: JSON siempre.
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview", 
+      model: "gemini-3-flash-preview",
       contents: prompt,
       config: {
-        systemInstruction: SYSTEM_PROMPT,
+        systemInstruction: systemPrompt,
         responseMimeType: "application/json",
       },
     });
 
     const text = response.text || "";
-    const cleanedText = text.trim();
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
     
-    // Find the first '{' and last '}' to extract the main JSON object
-    const firstBrace = cleanedText.indexOf('{');
-    const lastBrace = cleanedText.lastIndexOf('}');
-    
-    if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
-      // If we can't find a JSON object, try parsing the whole thing as a fallback
-      return JSON.parse(cleanedText.replace(/```json|```/g, ""));
+    if (firstBrace === -1 || lastBrace === -1) {
+      return JSON.parse(text); // Fallback
     }
-    
-    const jsonToParse = cleanedText.substring(firstBrace, lastBrace + 1);
+
+    const jsonToParse = text.substring(firstBrace, lastBrace + 1);
     return JSON.parse(jsonToParse);
   } catch (error) {
-    console.error("Gemini Error:", error);
+    console.error("Mentor Service Error:", error);
     throw error;
   }
 }

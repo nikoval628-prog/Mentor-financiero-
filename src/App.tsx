@@ -100,7 +100,14 @@ export default function App() {
     if (savedStats) {
       try {
         const parsed = JSON.parse(savedStats);
-        setStats(parsed);
+        // Ensure challenges/correct/incorrect are numbers and commonErrors/mostStudied are objects
+        setStats({
+          challenges: Number(parsed.challenges) || 0,
+          correct: Number(parsed.correct) || 0,
+          incorrect: Number(parsed.incorrect) || 0,
+          mostStudied: typeof parsed.mostStudied === 'object' ? parsed.mostStudied : {},
+          commonErrors: typeof parsed.commonErrors === 'object' ? parsed.commonErrors : {}
+        });
       } catch (e) {
         console.error("Error loading stats", e);
       }
@@ -309,24 +316,20 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                    <div className="space-y-1">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 flex flex-col items-center justify-center text-center">
                       <div className="text-3xl font-black text-slate-900">{stats.challenges.toLocaleString()}</div>
-                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Casos Resueltos</div>
+                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Casos Resueltos</div>
                     </div>
-                    <div className="space-y-1">
+                    <div className="bg-green-50 p-6 rounded-3xl border border-green-100 flex flex-col items-center justify-center text-center">
                       <div className="text-3xl font-black text-green-500">{stats.correct.toLocaleString()}</div>
-                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aciertos</div>
+                      <div className="text-[10px] font-black text-green-600 uppercase tracking-widest mt-1">Aciertos</div>
                     </div>
-                    <div className="space-y-1">
-                      <div className="text-3xl font-black text-red-500">{stats.incorrect.toLocaleString()}</div>
-                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Errores</div>
-                    </div>
-                    <div className="space-y-1">
+                    <div className="bg-blue-50 p-6 rounded-3xl border border-blue-100 flex flex-col items-center justify-center text-center">
                       <div className="text-3xl font-black text-blue-600">
                         {stats.challenges > 0 ? Math.round((stats.correct / stats.challenges) * 100) : 0}%
                       </div>
-                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rendimiento</div>
+                      <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-1">Rendimiento Técnico</div>
                     </div>
                   </div>
 
@@ -713,13 +716,13 @@ export default function App() {
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className={`text-4xl font-black tracking-tight ${result?.isCorrect ? 'text-green-900' : 'text-red-900'}`}>
-                      {result?.isCorrect ? '¡Respuesta Correcta!' : 'Decisión con Riesgo'}
+                    <h3 className={`text-3xl font-black tracking-tight ${result?.isCorrect ? 'text-green-900' : 'text-red-900'}`}>
+                      {result?.isCorrect ? '¡Decisión Correcta!' : 'Decisión con Diferente Riesgo'}
                     </h3>
-                    <p className="text-slate-600 font-medium leading-relaxed max-w-sm mx-auto">
+                    <p className="text-slate-600 font-medium leading-relaxed max-w-sm mx-auto text-sm">
                       {result?.isCorrect 
-                        ? 'Has aplicado una visión estratégica excelente para este caso.' 
-                        : 'Tu elección tiene fallas técnicas o estratégicas que debemos analizar.'}
+                        ? 'Has aplicado una visión estratégica excelente en este caso financiero.' 
+                        : 'Tu elección tiene implicaciones que impactan el resultado de forma distinta.'}
                     </p>
                   </div>
 
